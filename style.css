@@ -1,0 +1,346 @@
+/* Стили самого расширения. Вид чата — в теме: src/theme.css → theme/vk2017.json */
+/* ── окно редактора темы ── */
+/* id удвоен: темы таверны грузятся позже и иначе перебивают цвета */
+#vkte-root#vkte-root[hidden] {
+  display: none !important;
+}
+#vkte-root#vkte-root .vkte-win {
+  position: fixed;
+  z-index: 2147483001;
+  display: flex;
+  flex-direction: column;
+  max-height: min(640px, calc(100dvh - 72px));
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--vk-surface, #ffffff);
+  color: var(--vk-text, #000000);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.3);
+  font-family: Roboto, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+  text-shadow: none;
+}
+#vkte-root#vkte-root * {
+  box-sizing: border-box;
+  text-shadow: none !important;
+}
+#vkte-root#vkte-root .vkte-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 42px;
+  padding: 0 6px 0 14px;
+  background: var(--vk-header, #4a76a8);
+  color: #ffffff;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+#vkte-root#vkte-root .vkte-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+#vkte-root#vkte-root .vkte-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #ffffff;
+  font-size: 15px;
+  cursor: pointer;
+}
+#vkte-root#vkte-root .vkte-tabs {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--vk-line, #e7e8ec);
+  overflow-x: auto;
+}
+#vkte-root#vkte-root .vkte-tab {
+  flex: none;
+  height: 38px;
+  padding: 0 8px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--vk-muted, #818c99);
+  font: inherit;
+  cursor: pointer;
+}
+#vkte-root#vkte-root .vkte-tab.on {
+  color: var(--vk-text, #000000);
+  border-bottom-color: var(--vk-accent, #5181b8);
+  font-weight: 500;
+}
+#vkte-root#vkte-root .vkte-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 14px 12px;
+}
+#vkte-root#vkte-root .vkte-note {
+  margin: 4px 0 8px;
+  color: var(--vk-muted, #818c99);
+  font-size: 12px;
+}
+#vkte-root#vkte-root .vkte-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  border-bottom: 1px solid var(--vk-line, #e7e8ec);
+}
+#vkte-root#vkte-root .vkte-row.vkte-col {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 6px 0 8px;
+}
+#vkte-root#vkte-root .vkte-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#vkte-root#vkte-root .vkte-label {
+  flex: 1;
+  min-width: 0;
+  color: var(--vk-text, #000000);
+}
+#vkte-root#vkte-root .vkte-val {
+  color: var(--vk-muted, #818c99);
+  font-variant-numeric: tabular-nums;
+}
+#vkte-root#vkte-root .vkte-color {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 40px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--vk-field-border, #d3d9de);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+#vkte-root#vkte-root .vkte-color::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+#vkte-root#vkte-root .vkte-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+#vkte-root#vkte-root .vkte-reset {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 4px;
+  background: var(--vk-btn, #e5ebf1);
+  color: var(--vk-btn-text, #55677d);
+  font-size: 14px;
+  cursor: pointer;
+}
+#vkte-root#vkte-root .vkte-reset:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+#vkte-root#vkte-root .vkte-range {
+  width: 100%;
+  margin: 6px 0 0;
+}
+#vkte-root#vkte-root .vkte-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  border-bottom: 1px solid var(--vk-line, #e7e8ec);
+  cursor: pointer;
+}
+#vkte-root#vkte-root .vkte-check span {
+  color: var(--vk-text, #000000);
+}
+#vkte-root#vkte-root .vkte-text {
+  width: 100%;
+  height: 32px;
+  padding: 0 9px;
+  margin: 0;
+  font: inherit;
+  font-size: 14px;
+}
+#vkte-root#vkte-root .vkte-css {
+  width: 100%;
+  min-height: 220px;
+  margin: 0;
+  padding: 8px;
+  font: 12px/1.5 ui-monospace, Menlo, monospace;
+  resize: vertical;
+}
+#vkte-root#vkte-root .vkte-foot {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--vk-line, #e7e8ec);
+}
+#vkte-root#vkte-root .vkte-btn {
+  flex: 1;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: var(--vk-accent, #5181b8);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+#vkte-root#vkte-root .vkte-btn.ghost {
+  background: var(--vk-btn, #e5ebf1);
+  color: var(--vk-btn-text, #55677d);
+}
+#vkte-root#vkte-root .vkte-font {
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ── шапка диалога как в ВК: ‹ назад · имя и «online» · аватарка ── */
+#vk2017-chathead#vk2017-chathead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 50px;
+  padding: 0 12px 0 4px;
+  background: var(--vk-surface, #ffffff);
+  border-bottom: 1px solid var(--vk-line, #e7e8ec);
+  position: relative;
+  z-index: 31;
+  font-family: var(--vk-font, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif);
+  text-shadow: none;
+  user-select: none;
+}
+#vk2017-chathead#vk2017-chathead[hidden] {
+  display: none !important;
+}
+#vk2017-chathead .vk2017-ch-back {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--vk-icon, #828a99);
+  cursor: pointer;
+}
+#vk2017-chathead .vk2017-ch-back::before {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M15 5l-7 7 7 7'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M15 5l-7 7 7 7'/></svg>") center / contain no-repeat;
+}
+#vk2017-chathead .vk2017-ch-back:hover {
+  background: var(--vk-soft, #f0f2f5);
+  color: var(--vk-accent, #5181b8);
+}
+#vk2017-chathead .vk2017-ch-info {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  line-height: 1.25;
+  cursor: pointer;
+}
+#vk2017-chathead .vk2017-ch-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vk-text, #000000);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#vk2017-chathead .vk2017-ch-sub {
+  font-size: 12.5px;
+  color: var(--vk-muted, #818c99);
+}
+#vk2017-chathead .vk2017-ch-sub.typing {
+  color: var(--vk-link, #2a5885);
+}
+#vk2017-chathead .vk2017-ch-ava {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+#vk2017-chathead .vk2017-ch-ava[hidden] {
+  visibility: hidden;
+  display: block !important;
+}
+/* «печатает» в шапке — одно многоточие, которое набирается по точке */
+#vk2017-chathead .vk2017-ch-sub.typing::after {
+  content: "...";
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: vk2017-ellipsis 1.2s steps(4, end) infinite;
+}
+@keyframes vk2017-ellipsis {
+  to { width: 1em; }
+}
+
+/* ── блок темы в «Настройках пользователя» ── */
+#vk2017_settings {
+  gap: 6px;
+  margin: 6px 0 4px;
+}
+#vk2017_settings h4 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+}
+#vk2017_settings .vk2017-ver {
+  opacity: 0.6;
+  font-weight: normal;
+}
+#vk2017_settings .vk2017-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+#vk2017_settings .vk2017-btns .menu_button {
+  flex: 1 1 auto;
+  margin: 0;
+  justify-content: center;
+  white-space: nowrap;
+}
+#vk2017_settings .checkbox_label {
+  margin: 2px 0 0;
+}
+
+/* кнопки темы в окне редактора: светлая/тёмная и «Обновить тему» */
+#vkte-root#vkte-root .vkte-actions {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--vk-line, #e7e8ec);
+}
+#vkte-root#vkte-root .vkte-actions .vkte-btn {
+  height: 30px;
+  font-weight: normal;
+}
+#vkte-root#vkte-root .vkte-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

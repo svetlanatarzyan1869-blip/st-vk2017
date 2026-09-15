@@ -1,0 +1,44 @@
+/* Put custom styles here. */
+
+/* ── ВКонтакте 2017: экран загрузки ──
+   Этот файл таверна подключает раньше всего, до темы. Без него первые секунды
+   показывался красный логотип ST на сером, потом тема перекрашивала его — моргало.
+   Цвет фона — по светлому/тёмному режиму системы; дальше его держит тема. */
+#preloader,
+dialog.popup:has(#loader),
+dialog.popup:has(#loader)::backdrop {
+  background: #e7ebf0 !important;
+  backdrop-filter: none !important;
+}
+@media (prefers-color-scheme: dark) {
+  #preloader,
+  dialog.popup:has(#loader),
+  dialog.popup:has(#loader)::backdrop {
+    background: #0f0f10 !important;
+  }
+}
+dialog.popup:has(#loader) {
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  inset: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+#loader .splash-logo {
+  filter: hue-rotate(212deg) saturate(0.5) brightness(1.35) !important;
+  transition: none !important;
+}
+#loader.splash-screen,
+dialog.popup:has(#loader) {
+  transition: none !important;
+}
+#loader #load-spinner {
+  color: #5181b8 !important;
+}
+#loader .splash-message {
+  color: #818c99 !important;
+}

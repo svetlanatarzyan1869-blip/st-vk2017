@@ -1,0 +1,1646 @@
+/* ===== ВКонтакте 2017 — тема SillyTavern ===== */
+/* Порт темы Tavo. Одна тема, две палитры: светлая по умолчанию, тёмная по пометке
+   <html data-vk-theme="dark"> — её ставит расширение «ВКонтакте 2017 🌓».
+   Цвета — переменные --vk-*, значения лежат в build.py. После правок: python3 build.py.
+   В таверне этот CSS лежит в поле «Свой CSS» темы. */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* ---------- цвета самой таверны ---------- */
+/* Таверна пишет свои цвета прямо в <html style="…">. !important в таблице стилей
+   бьёт такой стиль, поэтому панели, меню и поля тоже берут палитру ВК и
+   переключаются вместе с тёмной. */
+:root {
+  --SmartThemeBodyColor: var(--vk-text) !important;
+  --SmartThemeEmColor: var(--vk-tone) !important;
+  --SmartThemeUnderlineColor: var(--vk-link) !important;
+  --SmartThemeQuoteColor: var(--vk-text) !important;
+  --SmartThemeBlurTintColor: var(--vk-surface) !important;
+  --SmartThemeChatTintColor: var(--vk-bg) !important;
+  --SmartThemeUserMesBlurTintColor: var(--vk-out) !important;
+  --SmartThemeBotMesBlurTintColor: var(--vk-in) !important;
+  --SmartThemeShadowColor: transparent !important;
+  --SmartThemeBorderColor: var(--vk-border) !important;
+  --SmartThemeBlurStrength: 0px !important;
+  --shadowWidth: 0 !important;
+  --mainFontFamily: var(--vk-font) !important;
+  --interactable-outline-color: var(--vk-accent) !important;
+}
+:root[data-vk-theme="dark"] { color-scheme: dark; }
+
+/* Размеры и надписи — их меняет редактор темы (расширение 🌓 → «Настроить тему ВК») */
+:root {
+  --vk-list-avatar: 72px;
+  --vk-header-h: 42px;
+  --vk-header-icon: 22px;
+  --vk-bottom-icon: 24px;
+  --vk-bubble-radius: 5px;
+  --vk-bubble-width: 92%;
+  --vk-line-height: 1.5;
+  --vk-paragraph: 0.7em;
+  /* как у ВК 2017: системный шрифт (на Mac/iPhone — San Francisco), Roboto — запасной */
+  --vk-font: -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --vk-text-forwarded: "1 пересланное сообщение";
+}
+
+/* ---------- фон ---------- */
+body {
+  background-color: var(--vk-bg) !important;
+}
+/* картинки-фоны таверны прячем: у ВК фон ровный */
+#bg1,
+#bg_custom {
+  opacity: 0 !important;
+}
+#chat {
+  background-color: var(--vk-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+
+/* ---------- шапка — синяя полоса ВК ---------- */
+/* id удвоен: у таверны есть правила вида body.no-blur #top-bar с !important — они специфичнее */
+html body #top-bar#top-bar {
+  background-color: var(--vk-header) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html body #top-settings-holder#top-settings-holder .drawer-icon {
+  color: #ffffff !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+#top-settings-holder .drawer-icon.closedIcon {
+  opacity: 0.7;
+}
+#top-settings-holder .drawer-icon.openIcon {
+  opacity: 1;
+}
+
+/* ---------- сообщения ---------- */
+#chat .mes {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 3px 10px !important;
+  margin: 0 !important;
+}
+/* в личке ВК не было аватарок (включаются в редакторе темы) */
+html:not(.vk-avatars) #chat .mes .mesAvatarWrapper {
+  display: none !important;
+}
+#chat .mes[is_user="true"] {
+  justify-content: flex-end;
+}
+
+/* Пузырь — блок сообщения. Хвостик нарисован ФОНОМ внутри пузыря (прозрачная полоса
+   7px с треугольником в верхнем углу), поэтому его не обрежет overflow.
+   Снизу у тела 1px темнее — еле заметная тень, как у ВК. */
+#chat .mes .mes_block {
+  width: fit-content !important;
+  max-width: var(--vk-bubble-width) !important;
+  min-width: 90px;
+  flex: 0 1 auto;
+  box-sizing: border-box;
+  padding: 5px 11px 6px 18px !important;
+  overflow: visible !important;
+  border-radius: 0 var(--vk-bubble-radius) var(--vk-bubble-radius) 0;
+  background:
+    linear-gradient(to bottom left, var(--vk-in) 50%, transparent 50%) left top / 7px 10px no-repeat,
+    linear-gradient(to top, var(--vk-in-line) 0 1px, var(--vk-in) 1px) 7px 0 / calc(100% - 7px) 100% no-repeat;
+}
+#chat .mes[is_user="true"] .mes_block {
+  padding: 5px 18px 6px 11px !important;
+  border-radius: var(--vk-bubble-radius) 0 0 var(--vk-bubble-radius);
+  background:
+    linear-gradient(to bottom right, var(--vk-out) 50%, transparent 50%) right top / 7px 10px no-repeat,
+    linear-gradient(to top, var(--vk-out-line) 0 1px, var(--vk-out) 1px) 0 0 / calc(100% - 7px) 100% no-repeat;
+}
+/* пока сообщение редактируется — на всю ширину, чтобы было удобно */
+#chat .mes .mes_block:has(.edit_textarea) {
+  width: 100% !important;
+  max-width: calc(100% - 24px) !important;
+}
+
+/* Строка с именем, временем и кнопками стоит у таверны НАД текстом. У ВК над текстом
+   ничего нет — переносим её под текст (order), мелко и серо, кнопки справа. */
+#chat .mes .mes_block {
+  display: flex !important;
+  flex-direction: column;
+}
+#chat .mes .ch_name {
+  order: 10;
+  min-height: 0 !important;
+  margin-top: 1px;
+  gap: 8px;
+  font-weight: 400;
+  line-height: 1;
+}
+#chat .mes .ch_name .mes_buttons,
+#chat .mes .ch_name .mes_edit_buttons {
+  margin-left: auto;
+}
+/* в личке ВК имён не было (включаются в редакторе темы) */
+html:not(.vk-names) #chat .mes .name_text {
+  display: none;
+}
+/* время у таверны длинное («14 сентября 2026 г. 21:40») — в пузыре ВК его не было */
+html:not(.vk-time) #chat .mes .timestamp {
+  display: none !important;
+}
+#chat .mes .mes_button,
+#chat .mes .extraMesButtons > div {
+  filter: none !important;
+  color: var(--vk-muted) !important;
+  font-size: 13px;
+  opacity: 0.6;
+}
+#chat .mes .mes_button:hover,
+#chat .mes .extraMesButtons > div:hover {
+  opacity: 1;
+}
+
+/* ---------- текст ---------- */
+/* Размер шрифта не задаём — его ведёт ползунок «Масштаб шрифта» таверны. */
+#chat .mes .mes_text {
+  /* размер — ползунок «Размер текста сообщений» в редакторе темы; без него — как в таверне */
+  font-size: var(--vk-text-size, inherit) !important;
+  font-family: var(--vk-font);
+  font-weight: 400 !important;
+  line-height: var(--vk-line-height) !important;
+  color: var(--vk-text) !important;
+  padding: 1px 0 0 !important;
+  text-shadow: none !important;
+}
+/* отступ между абзацами — чтобы текст не сливался (меняется в редакторе темы) */
+#chat .mes .mes_text p {
+  margin: 0 0 var(--vk-paragraph) !important;
+}
+#chat .mes .mes_text p:last-child {
+  margin-bottom: 0 !important;
+}
+#chat .mes .mes_text {
+  letter-spacing: 0.01em;
+}
+#chat .mes .mes_text em,
+#chat .mes .mes_text i {
+  font-style: italic;
+  color: var(--vk-tone) !important;
+}
+/* значки Font Awesome — тоже <i>, но им курсив и серый цвет не нужны (иначе кнопки «с наклоном») */
+#chat .mes .mes_text i[class*="fa-"] {
+  font-style: normal !important;
+  color: inherit !important;
+}
+#chat .mes .mes_text strong,
+#chat .mes .mes_text b {
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+}
+#chat .mes .mes_text q {
+  color: var(--vk-text) !important;
+}
+#chat .mes .mes_text a {
+  color: var(--vk-link) !important;
+  text-decoration: none;
+}
+#chat .mes .mes_text h1,
+#chat .mes .mes_text h2,
+#chat .mes .mes_text h3,
+#chat .mes .mes_text h4,
+#chat .mes .mes_text h5,
+#chat .mes .mes_text h6 {
+  font-size: 1em !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  margin: 0.6em 0 0.3em !important;
+  color: var(--vk-text) !important;
+}
+#chat .mes .mes_text hr {
+  border: none !important;
+  border-top: 1px solid var(--vk-hr) !important;
+  margin: 10px 0 !important;
+  height: 0 !important;
+  opacity: 1 !important;
+  background: none !important;
+}
+#chat .mes .mes_text blockquote {
+  border-left: 2px solid var(--vk-line-accent) !important;
+  margin: 4px 0 !important;
+  padding-left: 10px !important;
+  color: var(--vk-text) !important;
+}
+
+/* ---------- размышления — как пересланное сообщение ВК ---------- */
+#chat .mes .mes_reasoning_details {
+  margin: 2px 0 4px !important;
+  padding: 0 0 0 10px !important;
+  border: none !important;
+  border-left: 2px solid var(--vk-line-accent) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#chat .mes .mes_reasoning_summary,
+#chat .mes .mes_reasoning_header {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+#chat .mes .mes_reasoning_header_title {
+  font-size: 0 !important;
+}
+#chat .mes .mes_reasoning_header_title::before {
+  content: var(--vk-text-forwarded);
+  font-family: var(--vk-font);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--vk-link);
+}
+/* стрелка у таверны висит поверх заголовка (position: absolute) — ставим её в строку */
+#chat .mes .mes_reasoning_arrow {
+  position: static !important;
+  margin-left: 6px;
+  color: var(--vk-link) !important;
+  font-size: 11px !important;
+}
+#chat .mes .mes_reasoning {
+  color: var(--vk-tone) !important;
+  font-size: 0.93em;
+  padding: 2px 0 4px !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* ---------- свайпы ---------- */
+#chat .mes .swipe_left,
+#chat .mes .swipe_right {
+  color: var(--vk-accent) !important;
+  opacity: 0.75;
+  filter: none !important;
+  text-shadow: none !important;
+}
+#chat .mes .swipes-counter {
+  color: var(--vk-muted) !important;
+  opacity: 1;
+}
+#chat .last_mes {
+  padding-bottom: 20px !important;
+}
+#chat .mes .swipe_left {
+  left: 6px !important;
+}
+
+/* ---------- поле ввода ---------- */
+#send_form {
+  background-color: var(--vk-surface) !important;
+  border: none !important;
+  border-top: 1px solid var(--vk-border) !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+/* 16px оставлен специально: iPhone приближает поле ввода, если шрифт меньше */
+#send_textarea {
+  font-family: var(--vk-font) !important;
+  font-size: var(--vk-input-size, 16px) !important;
+  color: var(--vk-text) !important;
+  background: transparent !important;
+  border: none !important;
+  caret-color: var(--vk-line-accent);
+  text-shadow: none !important;
+}
+#send_textarea::placeholder {
+  color: var(--vk-placeholder) !important;
+  opacity: 1;
+}
+/* иконки слева и справа от поля — в одну строку (иначе переносились столбиком) */
+#leftSendForm,
+#rightSendForm {
+  flex-wrap: nowrap !important;
+  flex-shrink: 0;
+  /* на телефоне таверна сужает блок до одного значка (width: 1.15em) — второй налезал на подсказку */
+  width: auto !important;
+}
+/* серые иконки, синяя — только отправка */
+#leftSendForm > div,
+#rightSendForm > div {
+  color: var(--vk-muted) !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+#rightSendForm > #send_but {
+  color: var(--vk-accent) !important;
+  opacity: 1 !important;
+}
+
+/* ---------- «печатает» ---------- */
+/* Полоску рисует расширение «ВКонтакте 2017 🌓» над полем ввода, пока идёт ответ. */
+#vk2017-typing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 14px;
+  font-family: var(--vk-font);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--vk-muted);
+  background: transparent;
+  text-shadow: none;
+}
+#vk2017-typing[hidden] {
+  display: none !important;
+}
+#vk2017-typing .vk2017-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+#vk2017-typing .vk2017-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--vk-accent);
+  animation: vk2017-dot 1.2s ease-in-out infinite;
+}
+#vk2017-typing .vk2017-dots i:nth-child(2) { animation-delay: 0.2s; }
+#vk2017-typing .vk2017-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes vk2017-dot {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+
+/* ---------- меню ---------- */
+#options,
+#extensionsMenu,
+.popup .popper-modal {
+  background-color: var(--vk-surface) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 12px var(--vk-menu-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#options .options-content,
+#extensionsMenu .list-group,
+.list-group {
+  border: none !important;
+  border-radius: 4px !important;
+}
+#options .options-content a,
+#extensionsMenu > .extension_container > div,
+#extensionsMenu > div:not(.extension_container),
+.list-group-item {
+  color: var(--vk-text) !important;
+  opacity: 0.85;
+  text-shadow: none !important;
+}
+
+/* ---------- выбор сообщений для удаления ---------- */
+/* синий кружок ВК с белой галочкой вместо системного квадрата */
+#chat .mes input[type="checkbox"].del_checkbox {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px;
+  box-sizing: border-box !important;
+  border-radius: 50% !important;
+  border: 2px solid var(--vk-check-border) !important;
+  background: var(--vk-surface) !important;
+  opacity: 1 !important;
+  flex: none;
+  align-self: center;
+  margin: 0 8px 0 0 !important;
+}
+#chat .mes input[type="checkbox"].del_checkbox:checked {
+  border-color: var(--vk-accent) !important;
+  background: var(--vk-accent) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / 14px no-repeat !important;
+}
+#chat .mes input[type="checkbox"].del_checkbox::before,
+#chat .mes input[type="checkbox"].del_checkbox::after {
+  display: none !important;
+}
+
+/* ---------- плашки через Tavern Helper (код в iframe) ---------- */
+#chat .mes .mes_text iframe {
+  border: none !important;
+  background: transparent !important;
+}
+
+/* =====================================================================
+   ИНТЕРФЕЙС ТАВЕРНЫ ЦЕЛИКОМ — панели, поля, кнопки, списки как во ВК 2017
+   ===================================================================== */
+
+/* Полупрозрачные чёрные подложки таверны на белом превращались в грязно-серые поля.
+   Подменяем её «затемнения» на мягкие цвета ВК — сразу по всему интерфейсу. */
+:root {
+  --black30a: var(--vk-soft) !important;
+  --grey30a: var(--vk-soft) !important;
+  --white20a: var(--vk-line) !important;
+  --grey5020a: var(--vk-line) !important;
+  --SmartThemeCheckboxTickColor: #ffffff !important;
+  --topBarBlockSize: var(--vk-header-h) !important;
+  --topBarIconSize: var(--vk-header-icon) !important;
+}
+
+/* ---------- шапка: высота и иконки ВК ---------- */
+html body #top-bar#top-bar {
+  height: var(--topBarBlockSize) !important;
+}
+html body #top-settings-holder#top-settings-holder {
+  height: var(--topBarBlockSize) !important;
+}
+html body #top-settings-holder#top-settings-holder .drawer-icon {
+  font-size: 0 !important;
+  width: 100% !important;
+  max-width: calc(var(--vk-header-icon) * 2.1);
+  min-width: 0 !important;
+  height: var(--topBarBlockSize) !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  opacity: 0.78;
+  position: relative;
+}
+/* 9 иконок делят ширину поровну — на телефоне не вылезают за край */
+html body #top-settings-holder#top-settings-holder > .drawer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+html body #top-settings-holder#top-settings-holder .drawer-icon.openIcon {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.14);
+}
+html body #top-settings-holder#top-settings-holder .drawer-icon:hover {
+  opacity: 1;
+}
+html body #top-settings-holder#top-settings-holder .drawer-icon::before {
+  content: "" !important;
+  display: block;
+  width: var(--vk-header-icon);
+  height: var(--vk-header-icon);
+  background-color: currentColor;
+  -webkit-mask: var(--vk-i) center / contain no-repeat;
+  mask: var(--vk-i) center / contain no-repeat;
+}
+#top-settings-holder .drawer-icon.fa-sliders { --vk-i: var(--vk-i-sliders); }
+#top-settings-holder .drawer-icon.fa-plug,
+#top-settings-holder .drawer-icon.fa-plug-circle-exclamation,
+#top-settings-holder #API-status-top { --vk-i: var(--vk-i-plug); }
+#top-settings-holder .drawer-icon.fa-font { --vk-i: var(--vk-i-font); }
+#top-settings-holder .drawer-icon.fa-book-atlas { --vk-i: var(--vk-i-book); }
+#top-settings-holder .drawer-icon.fa-user-cog,
+#top-settings-holder .drawer-icon.fa-user-gear { --vk-i: var(--vk-i-gear); }
+#top-settings-holder .drawer-icon.fa-panorama { --vk-i: var(--vk-i-photo); }
+#top-settings-holder .drawer-icon.fa-cubes { --vk-i: var(--vk-i-apps); }
+#top-settings-holder .drawer-icon.fa-face-smile { --vk-i: var(--vk-i-home); }
+#top-settings-holder .drawer-icon.fa-address-card { --vk-i: var(--vk-i-friends); }
+/* нет подключения к модели — красная точка, как счётчик ВК */
+#top-settings-holder #API-status-top.fa-plug-circle-exclamation::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 11px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff5c5c;
+  box-shadow: 0 0 0 2px var(--vk-header);
+}
+
+/* ---------- иконки у поля ввода ---------- */
+/* ≡ → скрепка, волшебная палочка → смайлик, самолётик → стрелка ВК */
+#leftSendForm > #options_button,
+#leftSendForm > #extensionsMenuButton,
+#rightSendForm > #send_but {
+  font-size: 0 !important;
+}
+#leftSendForm > #options_button::before,
+#leftSendForm > #extensionsMenuButton::before,
+#rightSendForm > #send_but::before {
+  content: "" !important;
+  display: block;
+  width: var(--vk-bottom-icon);
+  height: var(--vk-bottom-icon);
+  background-color: currentColor;
+  -webkit-mask: var(--vk-i) center / contain no-repeat;
+  mask: var(--vk-i) center / contain no-repeat;
+}
+#leftSendForm > #options_button { --vk-i: var(--vk-i-clip); }
+#leftSendForm > #extensionsMenuButton { --vk-i: var(--vk-i-smile); }
+#rightSendForm > #send_but { --vk-i: var(--vk-i-send); }
+#leftSendForm > div,
+#rightSendForm > div:not(#send_but) {
+  color: var(--vk-icon) !important;
+  font-size: 19px !important;
+  opacity: 1 !important;
+}
+#leftSendForm > div:hover,
+#rightSendForm > div:hover {
+  color: var(--vk-accent) !important;
+  filter: none !important;
+}
+
+/* ---------- панели (настройки, персонажи, расширения…) ---------- */
+.drawer-content,
+#right-nav-panel,
+#left-nav-panel {
+  background-color: var(--vk-surface) !important;
+  color: var(--vk-text) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: var(--vk-card-shadow), 0 4px 16px var(--vk-float-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+.fillLeft,
+.fillRight {
+  border-radius: 0 !important;
+}
+.drawer-content h3,
+.drawer-content h4,
+.drawer-content h5,
+.drawer-content b,
+.drawer-content strong {
+  font-weight: 500 !important;
+  color: var(--vk-text);
+}
+.drawer-content h3 {
+  font-size: 15px;
+}
+.drawer-content small,
+.drawer-content .toggle-description,
+.drawer-content .notes-link {
+  color: var(--vk-muted);
+}
+.drawer-content hr,
+.sysHR {
+  border: none !important;
+  border-top: 1px solid var(--vk-line) !important;
+  background: none !important;
+  opacity: 1 !important;
+}
+.drawer-content .fa-circle-info,
+.drawer-content .note-link-span {
+  color: var(--vk-icon) !important;
+  opacity: 1;
+}
+
+/* заголовки-плашки таверны (градиент) — плоские, как шапки блоков ВК */
+/* заголовки разделов: .standoutHeader и h4 в «Настройках пользователя» (у таверны там свой градиент) */
+#user-settings-block h4,
+.standoutHeader {
+  background: var(--vk-soft) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: var(--vk-text) !important;
+  text-shadow: none !important;
+}
+.standoutHeader ~ .inline-drawer-content {
+  background: transparent !important;
+  border: 1px solid var(--vk-line) !important;
+  border-radius: 4px !important;
+}
+.inline-drawer-header b,
+.inline-drawer-header strong {
+  font-weight: 500 !important;
+}
+.inline-drawer-icon {
+  color: var(--vk-icon) !important;
+}
+
+/* ---------- поля ввода и списки ---------- */
+.text_pole,
+select,
+textarea:not(#send_textarea),
+input[type="text"],
+input[type="number"],
+input[type="search"],
+input[type="password"],
+input[type="url"],
+.neo-range-input {
+  background-color: var(--vk-surface) !important;
+  color: var(--vk-text) !important;
+  border: 1px solid var(--vk-field-border) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  font-family: var(--vk-font);
+}
+.text_pole:focus,
+select:focus,
+textarea:not(#send_textarea):focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="password"]:focus,
+.neo-range-input:focus {
+  border-color: var(--vk-field-focus) !important;
+  outline: none !important;
+}
+.text_pole::placeholder,
+textarea::placeholder,
+input::placeholder {
+  color: var(--vk-placeholder) !important;
+  opacity: 1;
+}
+.text_pole:disabled,
+input:disabled,
+select:disabled {
+  background-color: var(--vk-soft) !important;
+  color: var(--vk-muted) !important;
+}
+/* поиск в select2 и выпадающих списках */
+.select2-container .select2-selection,
+.select2-dropdown {
+  background-color: var(--vk-surface) !important;
+  border: 1px solid var(--vk-field-border) !important;
+  border-radius: 4px !important;
+  color: var(--vk-text) !important;
+}
+.select2-results__option--highlighted {
+  background-color: var(--vk-selected) !important;
+  color: var(--vk-text) !important;
+}
+
+/* ---------- кнопки ---------- */
+/* обычные — светло-голубые с серо-синим текстом, как «Отмена» у ВК */
+.menu_button {
+  background-color: var(--vk-btn) !important;
+  color: var(--vk-btn-text) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+.menu_button:not(.disabled):not([disabled]):hover,
+.menu_button:not(.disabled):not([disabled]).active,
+.menu_button.toggleEnabled {
+  background-color: var(--vk-btn-hover) !important;
+}
+/* главные кнопки окон (Да, Сохранить…) — синие */
+.popup .popup-button-ok,
+.menu_button.menu_button_icon.accent,
+#dialogue_popup_ok {
+  background-color: var(--vk-accent) !important;
+  color: #ffffff !important;
+}
+.popup .popup-button-ok:hover,
+#dialogue_popup_ok:hover {
+  background-color: var(--vk-accent-active) !important;
+}
+.menu_button.caution,
+.redWarningBG {
+  background-color: #e64646 !important;
+  color: #ffffff !important;
+}
+
+/* ---------- галочки ---------- */
+/* квадратик ВК: светлая рамка, при выборе — синий с белой галочкой */
+input[type="checkbox"]:not(.del_checkbox) {
+  background-color: var(--vk-surface) !important;
+  border: 1px solid var(--vk-check-border) !important;
+  border-radius: 3px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+input[type="checkbox"]:not(.del_checkbox):checked {
+  background-color: var(--vk-accent) !important;
+  border-color: var(--vk-accent) !important;
+}
+input[type="checkbox"]:not(.del_checkbox)::before {
+  box-shadow: inset 1em 1em #ffffff !important;
+}
+
+/* ---------- ползунки ---------- */
+/* тонкая серая дорожка и белый кружок (заливку таверна не пересчитывает по значению — без неё) */
+input[type="range"],
+.neo-range-slider {
+  height: 4px !important;
+  border-radius: 2px !important;
+  background: var(--vk-track) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+input[type="range"]::-webkit-slider-thumb,
+.neo-range-slider::-webkit-slider-thumb {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 1px solid var(--vk-check-border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+}
+input[type="range"]::-moz-range-thumb,
+.neo-range-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid var(--vk-check-border);
+}
+.neo-range-input {
+  border-top: none !important;
+  border-radius: 0 0 4px 4px !important;
+}
+
+/* ---------- окна ---------- */
+.popup,
+dialog.popup {
+  background-color: var(--vk-surface) !important;
+  color: var(--vk-text) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: 0 8px 30px var(--vk-menu-shadow) !important;
+  backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+dialog.popup::backdrop {
+  background: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: none !important;
+}
+#toast-container > div {
+  text-shadow: none !important;
+}
+
+/* ---------- теги ---------- */
+.tag {
+  background-color: var(--vk-btn) !important;
+  color: var(--vk-btn-text) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+.tag.selected,
+.tag.excluded {
+  background-color: var(--vk-accent) !important;
+  color: #ffffff !important;
+}
+
+/* ---------- список персонажей — как список диалогов ВК ---------- */
+#right-nav-panel .character_select,
+#right-nav-panel .group_select,
+#right-nav-panel .bogus_folder_select {
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+  background: transparent !important;
+  gap: 12px;
+}
+#right-nav-panel .character_select:hover,
+#right-nav-panel .group_select:hover,
+#right-nav-panel .bogus_folder_select:hover {
+  background-color: var(--vk-hover) !important;
+}
+#right-nav-panel .character_select.is_fav,
+#right-nav-panel .group_select.is_fav {
+  background: transparent !important;
+  border-left: none !important;
+}
+/* избранные — без жёлтой обводки; звёздочка синяя */
+#right-nav-panel .is_fav .avatar,
+#right-nav-panel .avatar.is_fav {
+  outline: none !important;
+}
+#right-nav-panel .is_fav .ch_name {
+  color: var(--vk-text) !important;
+}
+#right-nav-panel .character_select .character_select_container,
+#right-nav-panel .character_select .flex-container {
+  align-self: center;
+}
+#right-nav-panel .character_select .avatar,
+#right-nav-panel .group_select .avatar,
+#right-nav-panel .bogus_folder_select .avatar {
+  width: 50px !important;
+  height: 50px !important;
+  flex: none;
+  border-radius: 50% !important;
+  overflow: hidden;
+  box-shadow: none !important;
+  border: none !important;
+}
+#right-nav-panel .character_select .avatar img,
+#right-nav-panel .group_select .avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  object-fit: cover;
+  border: none !important;
+}
+#right-nav-panel .character_select .ch_name,
+#right-nav-panel .group_select .ch_name {
+  font-size: 13px;
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+}
+#right-nav-panel .ch_description,
+#right-nav-panel .character_select .ch_additional_info,
+#right-nav-panel .group_select_block_list {
+  font-size: 12.5px;
+  color: var(--vk-muted) !important;
+  opacity: 1 !important;
+}
+#right-nav-panel .ch_fav_icon {
+  color: var(--vk-accent) !important;
+}
+#rm_button_selected_ch h2,
+#rm_ch_create_block h2 {
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+}
+#right-nav-panel .right_menu_button,
+#right-nav-panel #rm_button_characters,
+#right-nav-panel #rm_button_panel_pin_div {
+  color: var(--vk-icon) !important;
+  filter: none !important;
+}
+#right-nav-panel .right_menu_button:hover {
+  color: var(--vk-accent) !important;
+}
+
+/* ---------- расширение Chat Top Bar (полоса над чатом и список чатов) ---------- */
+#extensionTopBar {
+  background-color: var(--vk-surface) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  color: var(--vk-text) !important;
+  text-shadow: none !important;
+}
+#extensionTopBar .fa-solid,
+#extensionTopBar .fa-regular,
+#extensionTopBar i,
+#extensionTopBar .menu_button {
+  color: var(--vk-icon) !important;
+  background: transparent !important;
+}
+#extensionTopBarChatName {
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+}
+#extensionTopBarSearchInput {
+  background-color: var(--vk-soft) !important;
+  border: none !important;
+}
+#extensionSideBar {
+  background-color: var(--vk-surface) !important;
+  border: none !important;
+  box-shadow: var(--vk-card-shadow) !important;
+  backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+#extensionSideBar #extensionSideBarContainer .sideBarItem {
+  border: none !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+#extensionSideBar #extensionSideBarContainer .sideBarItem:hover {
+  background-color: var(--vk-hover) !important;
+}
+#extensionSideBar #extensionSideBarContainer .sideBarItem.selected {
+  background-color: var(--vk-selected) !important;
+}
+#extensionSideBar .chatName {
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+}
+#extensionSideBar .chatMessage,
+#extensionSideBar .chatStats {
+  color: var(--vk-muted) !important;
+}
+
+/* ---------- полосы прокрутки ---------- */
+::-webkit-scrollbar-thumb {
+  background-color: var(--vk-check-border) !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+}
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+
+/* =====================================================================
+   ПЕРЕКЛЮЧАТЕЛИ РЕДАКТОРА ТЕМЫ (классы на <html>)
+   ===================================================================== */
+
+/* без хвостиков — обычные прямоугольники со скруглением */
+html.vk-tails-off #chat .mes .mes_block {
+  background: var(--vk-in) !important;
+  border-radius: var(--vk-bubble-radius) !important;
+  padding: 5px 11px 6px !important;
+  box-shadow: inset 0 -1px 0 var(--vk-in-line);
+}
+html.vk-tails-off #chat .mes[is_user="true"] .mes_block {
+  background: var(--vk-out) !important;
+  box-shadow: inset 0 -1px 0 var(--vk-out-line);
+}
+/* имена и время — строку с ними возвращаем наверх */
+html.vk-names #chat .mes .ch_name,
+html.vk-time #chat .mes .ch_name {
+  order: 0;
+  margin: 0 0 2px;
+}
+html.vk-names #chat .mes .name_text {
+  font-family: var(--vk-font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vk-link) !important;
+}
+html.vk-time #chat .mes .timestamp {
+  font-family: var(--vk-font);
+  font-size: 12px !important;
+  color: var(--vk-muted) !important;
+  opacity: 1;
+}
+html.vk-avatars #chat .mes .mesAvatarWrapper .avatar {
+  display: block !important;
+}
+html.vk-avatars #chat .mes .mesAvatarWrapper .avatar img {
+  border-radius: 50% !important;
+}
+html.vk-mes-buttons-hover #chat .mes:not(:hover) .ch_name .mes_buttons {
+  opacity: 0;
+}
+html:not(.vk-hotswap) #HotSwapWrapper {
+  display: none !important;
+}
+html.vk-list-buttons-off #rm_button_bar > .menu_button,
+html.vk-list-buttons-off #rm_buttons_container,
+html.vk-list-buttons-off #right-nav-panel .rm_tag_controls,
+html.vk-list-buttons-off #rm_print_characters_pagination > .menu_button {
+  display: none !important;
+}
+html.vk-list-tags-off #rm_print_characters_block .tags {
+  display: none !important;
+}
+
+/* =====================================================================
+   СПИСОК ПЕРСОНАЖЕЙ: компактный верх, крупные аватарки
+   ===================================================================== */
+#rm_button_bar {
+  gap: 2px !important;
+  align-items: center !important;
+}
+#rm_button_bar > .menu_button,
+#rm_buttons_container > .menu_button,
+#rm_print_characters_pagination > .menu_button:not(.bulkEditOptionElement),
+#right-nav-panel .rm_tag_controls .tag.actionable {
+  background: transparent !important;
+  color: var(--vk-icon) !important;
+  width: 30px !important;
+  min-width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 15px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+#rm_button_bar > .menu_button:hover,
+#rm_print_characters_pagination > .menu_button:hover,
+#right-nav-panel .rm_tag_controls .tag.actionable:hover {
+  background: var(--vk-soft) !important;
+  color: var(--vk-accent) !important;
+}
+#right-nav-panel .rm_tag_controls .tag.actionable.selected {
+  background: var(--vk-btn) !important;
+  color: var(--vk-accent) !important;
+}
+#right-nav-panel .rm_tag_controls .tag.actionable .tag_name {
+  color: inherit !important;
+}
+#right-nav-panel .rm_tag_controls .tags {
+  gap: 2px !important;
+  margin: 0 !important;
+}
+#character_sort_order {
+  height: 30px;
+  margin: 0 4px !important;
+  font-size: 13px !important;
+}
+#rm_print_characters_pagination {
+  font-size: 12px;
+  gap: 2px;
+  margin: 2px 0 !important;
+}
+#rm_print_characters_pagination .paginationjs-pages li > a,
+#rm_print_characters_pagination .paginationjs-size-changer select {
+  background: transparent !important;
+  color: var(--vk-icon) !important;
+  border: none !important;
+}
+#right-nav-panel .right_menu_button {
+  font-size: 17px !important;
+}
+#right-nav-panel .character_select .avatar,
+#right-nav-panel .group_select .avatar,
+#right-nav-panel .bogus_folder_select .avatar {
+  width: var(--vk-list-avatar) !important;
+  height: var(--vk-list-avatar) !important;
+  min-width: var(--vk-list-avatar) !important;
+  flex: none;
+}
+#right-nav-panel .character_select .ch_name,
+#right-nav-panel .group_select .ch_name {
+  font-size: 14px !important;
+}
+#right-nav-panel #rm_print_characters_block .tags .tag {
+  font-size: 11px !important;
+  padding: 1px 6px !important;
+}
+
+/* =====================================================================
+   МЕНЕДЖЕР ПРОМПТОВ: выключенные читаются, без подсветки
+   ===================================================================== */
+#completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_prompt {
+  background: var(--vk-surface) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+#completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_prompt:hover {
+  background: var(--vk-hover) !important;
+}
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt_name,
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt_name .prompt-manager-inspect-action {
+  color: var(--vk-text) !important;
+  text-shadow: none !important;
+}
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt_disabled .completion_prompt_manager_prompt_name,
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt_disabled .completion_prompt_manager_prompt_name .prompt-manager-inspect-action {
+  color: var(--vk-placeholder) !important;
+  opacity: 1 !important;
+}
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt.completion_prompt_manager_prompt_disabled {
+  border-color: var(--vk-line) !important;
+  opacity: 1 !important;
+}
+#completion_prompt_manager #completion_prompt_manager_list .prompt-manager-toggle-action,
+#completion_prompt_manager #completion_prompt_manager_list .prompt-manager-edit-action,
+#completion_prompt_manager #completion_prompt_manager_list .prompt-manager-detach-action {
+  filter: none !important;
+}
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt:not(.completion_prompt_manager_prompt_disabled) .prompt-manager-toggle-action {
+  color: var(--vk-accent) !important;
+}
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt_disabled .prompt-manager-toggle-action {
+  color: var(--vk-check-border) !important;
+}
+#completion_prompt_manager .completion_prompt_manager_list_head,
+#completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_list_separator {
+  color: var(--vk-muted) !important;
+  border-color: var(--vk-line) !important;
+  background: transparent !important;
+}
+
+/* =====================================================================
+   ЗАГОЛОВКИ В «РАСШИРЕНИЯХ» — у таверны там свой градиент
+   ===================================================================== */
+#extensions_settings .inline-drawer-toggle.inline-drawer-header,
+#extensions_settings2 .inline-drawer-toggle.inline-drawer-header {
+  background: var(--vk-soft) !important;
+  background-image: none !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  color: var(--vk-text) !important;
+  text-shadow: none !important;
+}
+#extensions_settings .inline-drawer-toggle.inline-drawer-header:hover,
+#extensions_settings2 .inline-drawer-toggle.inline-drawer-header:hover {
+  background: var(--vk-btn) !important;
+}
+#extensions_settings .inline-drawer-content,
+#extensions_settings2 .inline-drawer-content {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* строка персонажа: аватарка слева, имя и описание справа (у таверны блок текста шириной «100% − 70px» —
+   с крупной аватаркой он переносился под неё) */
+#right-nav-panel .character_select,
+#right-nav-panel .group_select {
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+#right-nav-panel .character_select .character_select_container,
+#right-nav-panel .group_select .group_select_container {
+  width: auto !important;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* замок и кнопка списка — в одну строку, а не столбиком */
+#CharListButtonAndHotSwaps > .flexFlowColumn {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+}
+#right-nav-panel #rm_button_panel_pin_div label,
+#right-nav-panel #rm_button_panel_pin_div .right_menu_button {
+  font-size: 16px !important;
+}
+
+/* =====================================================================
+   ПОЛЕ ВВОДА, ЭКРАН ПРИВЕТСТВИЯ И СПИСОК ЧАТОВ
+   ===================================================================== */
+
+/* таверна центрует подсказку в пустом поле (#send_textarea::placeholder) — у ВК она слева */
+#send_textarea:placeholder-shown {
+  text-align: left !important;
+}
+#send_textarea::placeholder {
+  text-align: left !important;
+  color: var(--vk-placeholder) !important;
+  opacity: 1 !important;
+}
+
+/* Лого SillyTavern, версия и ссылки (Документация/GitHub/Discord) на стартовом экране.
+   Включаются в редакторе темы: Элементы → «Шапка приветствия таверны». */
+html:not(.vk-welcome) .welcomePanel .welcomeHeaderTitle,
+html:not(.vk-welcome) .welcomePanel .welcomeShortcuts,
+html:not(.vk-welcome) .welcomePanel .welcomeShortcutsSeparator {
+  display: none !important;
+}
+.welcomePanel {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.welcomePanel .recentChatsTitle {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+}
+/* недавние чаты — строками, как диалоги ВК */
+.welcomeRecent .recentChatList .recentChat {
+  border: none !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+  border-radius: 0 !important;
+  background: var(--vk-surface) !important;
+  padding: 8px 12px !important;
+}
+.welcomeRecent .recentChatList .recentChat:hover {
+  background: var(--vk-hover) !important;
+}
+.welcomeRecent .recentChatList .recentChat .avatar img {
+  border-radius: 50% !important;
+}
+.welcomeRecent .recentChatList .recentChat .chatName {
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+}
+.welcomeRecent .recentChatList .recentChat .chatMessage,
+.welcomeRecent .recentChatList .recentChat .chatStats {
+  color: var(--vk-muted) !important;
+}
+
+/* высота поля ввода — ползунок в редакторе темы (без него как у таверны) */
+html:root #send_textarea {
+  min-height: var(--vk-input-height, calc(var(--bottomFormBlockSize) + 2px)) !important;
+}
+
+/* СПИСОК ДИАЛОГОВ НА СТАРТОВОМ ЭКРАНЕ — карточкой, как «Сообщения» ВК.
+   Если когда-то нажали «скрыть недавние чаты», таверна прячет список, а кнопка «показать»
+   спрятана у нас вместе с шапкой. Поэтому показываем всегда; выключается в редакторе: Элементы. */
+html.vk-welcome-chats .welcomePanel.recentHidden .recentChatsTitle,
+html.vk-welcome-chats .welcomePanel.recentHidden .welcomeRecent {
+  display: block !important;
+}
+html:not(.vk-welcome-chats) .welcomePanel .recentChatsTitle,
+html:not(.vk-welcome-chats) .welcomePanel .welcomeRecent,
+html:not(.vk-welcome-chats):not(.vk-welcome) #chat .welcomePanel {
+  display: none !important;
+}
+html.vk-welcome-chats #chat .welcomePanel {
+  width: calc(100% - 16px) !important;
+  max-width: 440px !important;
+  margin: 28px auto 0 !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  background: var(--vk-surface) !important;
+  box-shadow: var(--vk-card-shadow) !important;
+  overflow: hidden;
+}
+html.vk-welcome-chats #chat .welcomePanel ~ .mes[type="welcome_prompt"] .mes_block {
+  margin-top: 12px !important;
+}
+html.vk-welcome-chats .welcomePanel .welcomeHeader {
+  margin: 0 !important;
+  padding: 12px 16px 10px !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+}
+html.vk-welcome-chats .welcomePanel .recentChatsTitle {
+  font-size: 14px !important;
+  text-align: left !important;
+}
+html.vk-welcome-chats .welcomeRecent,
+html.vk-welcome-chats .welcomeRecent .recentChatList {
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  max-height: none !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChatList .recentChat {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 9px 16px !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+}
+html.vk-welcome-chats .welcomeRecent .recentChatList .recentChat.hidden {
+  display: none !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChatList .recentChat:hover {
+  background: var(--vk-hover) !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .avatar {
+  flex: none !important;
+  width: 50px !important;
+  height: 50px !important;
+  margin: 0 !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .avatar img {
+  width: 50px !important;
+  height: 50px !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .recentChatInfo {
+  flex: 1 !important;
+  min-width: 0 !important;
+  gap: 2px !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatNameContainer {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+/* только имя персонажа, без «– имя файла чата» */
+html.vk-welcome-chats .welcomeRecent .recentChat .chatName {
+  flex: 1 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13.5px !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatName > span {
+  display: none !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatDate {
+  flex: none;
+  margin-left: auto;
+  font-size: 12px !important;
+  color: var(--vk-muted) !important;
+  opacity: 1 !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat:not(:hover) .chatActions {
+  display: none !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatActions .menu_button {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 12px !important;
+  background: transparent !important;
+  color: var(--vk-icon) !important;
+  box-shadow: none !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatActions .menu_button.active {
+  color: var(--vk-accent) !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatMessageContainer {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatMessage {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  max-height: 1.5em !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  font-size: 13px !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .chatStats {
+  flex: none;
+  font-size: 11px !important;
+}
+html.vk-welcome-chats .welcomeRecent .recentChat .recentChatPinned {
+  display: none !important;
+}
+html.vk-welcome-chats .welcomeRecent .showMoreChats {
+  width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--vk-link) !important;
+  box-shadow: none !important;
+}
+html.vk-welcome-chats .welcomeRecent .noRecentChat {
+  padding: 16px !important;
+  color: var(--vk-muted) !important;
+}
+
+/* список файлов чата: дата, размер и число сообщений — читаемо, а не бледно */
+#select_chat_popup .select_chat_block {
+  border: none !important;
+  border-bottom: 1px solid var(--vk-line) !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+}
+#select_chat_popup .select_chat_block:hover {
+  background: var(--vk-hover) !important;
+}
+#select_chat_popup .select_chat_block[highlight] {
+  background: var(--vk-selected) !important;
+}
+#select_chat_popup .select_chat_block_filename {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--vk-text) !important;
+  opacity: 1 !important;
+}
+#select_chat_popup .select_chat_block_filename_item:not(.select_chat_block_filename) {
+  opacity: 1 !important;
+  color: var(--vk-muted) !important;
+}
+#select_chat_popup .select_chat_block_mes {
+  color: var(--vk-muted) !important;
+}
+
+/* =====================================================================
+   ЭКРАН ЗАГРУЗКИ — сплошной фон ВК и синий логотип
+   ===================================================================== */
+/* Загрузка у таверны — всплывающее окно (.popup) с #loader внутри: белый прямоугольник
+   на сером затемнении. Растягиваем окно на весь экран и красим фоном ВК. */
+dialog.popup:has(#loader),
+.popup:has(#loader) {
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  inset: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: var(--vk-bg) !important;
+}
+dialog.popup:has(#loader)::backdrop {
+  background: var(--vk-bg) !important;
+}
+/* красный логотип ST → синий ВК (буквы ST остаются белыми) */
+#loader .splash-logo {
+  filter: hue-rotate(212deg) saturate(0.5) brightness(1.35) !important;
+  transition: none !important;
+}
+#loader.splash-screen,
+dialog.popup:has(#loader) {
+  transition: none !important;
+}
+#loader #load-spinner {
+  color: var(--vk-accent) !important;
+}
+#loader .splash-message {
+  font-family: var(--vk-font);
+  font-size: 15px !important;
+  color: var(--vk-muted) !important;
+}
+
+/* =====================================================================
+   СТАРТОВЫЙ ЭКРАН — как пустой раздел «Сообщения» ВК
+   ===================================================================== */
+/* сообщение ассистента «Есть соединение с API?..» скрыто (возвращается в редакторе темы) */
+html:not(.vk-welcome-assistant) #chat .mes[type="assistant_message"] {
+  display: none !important;
+}
+/* панели других расширений без открытого чата не нужны */
+#chat:has(> .welcomePanel) > :not(.welcomePanel):not(.mes) {
+  display: none !important;
+}
+/* кнопки «Соединение с API / Персонажи / Расширения» — карточка по центру */
+#chat .mes[type="welcome_prompt"] {
+  justify-content: center !important;
+}
+#chat .mes[type="welcome_prompt"] .mes_block {
+  width: 100% !important;
+  max-width: 440px !important;
+  margin: 28px auto 0 !important;
+  padding: 30px 20px 24px !important;
+  border-radius: 6px !important;
+  background: var(--vk-surface) !important;
+  box-shadow: var(--vk-card-shadow) !important;
+  align-items: center;
+  text-align: center;
+}
+#chat .mes[type="welcome_prompt"] .ch_name,
+#chat .mes[type="welcome_prompt"] .mesAvatarWrapper {
+  display: none !important;
+}
+#chat .mes[type="welcome_prompt"] .mes_block::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  background-color: var(--vk-check-border);
+  -webkit-mask: var(--vk-i-dialogs) center / contain no-repeat;
+  mask: var(--vk-i-dialogs) center / contain no-repeat;
+}
+#chat .mes[type="welcome_prompt"] .mes_text {
+  width: 100%;
+  padding: 0 !important;
+}
+#chat .mes[type="welcome_prompt"] .mes_text::before {
+  content: "Выберите диалог\A или начните новый с персонажем";
+  display: block;
+  white-space: pre-line;
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--vk-muted);
+}
+#chat .mes[type="welcome_prompt"] .mes_text .flex-container {
+  flex-direction: column !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+}
+#chat .mes[type="welcome_prompt"] .mes_text .menu_button {
+  width: 260px !important;
+  max-width: 100%;
+  margin: 0 0 10px !important;
+  padding: 9px 14px !important;
+  gap: 8px;
+  justify-content: center;
+  font-size: 13px !important;
+  font-style: normal !important;
+}
+/* главная кнопка — персонажи, синяя */
+#chat .mes[type="welcome_prompt"] .mes_text .menu_button:last-of-type {
+  margin-bottom: 0 !important;
+}
+#chat .mes[type="welcome_prompt"] .mes_text .menu_button[data-target="rightNavHolder"] {
+  background-color: var(--vk-accent) !important;
+  color: #ffffff !important;
+}
+
+/* =====================================================================
+   ЧИСЛО СООБЩЕНИЙ У ПЕРСОНАЖЕЙ В СПИСКЕ (ставит расширение)
+   ===================================================================== */
+#right-nav-panel .character_select .vk2017-count {
+  margin-left: auto;
+  padding-left: 8px;
+  flex: none;
+  white-space: nowrap;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: var(--vk-muted) !important;
+  opacity: 1 !important;
+}
+#right-nav-panel .character_select.vk2017-has-count .character_version {
+  display: none !important;
+}
+#right-nav-panel .character_select .character_name_block {
+  display: flex !important;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+#right-nav-panel .character_select .character_name_block .ch_name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* у заголовков таверна при наведении выкручивает яркость на 150% — у ВК такого нет */
+#user-settings-block h4,
+.standoutHeader.inline-drawer-header:hover,
+#extensions_settings .inline-drawer-toggle.inline-drawer-header:hover,
+#extensions_settings2 .inline-drawer-toggle.inline-drawer-header:hover {
+  filter: none !important;
+}
+#user-settings-block h4 {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 6px 10px !important;
+}
+
+/* =====================================================================
+   ПОЛОСА CHAT TOP BAR И ОЖИДАНИЕ ОТВЕТА
+   ===================================================================== */
+/* Полоса расширения «Chat Top Bar» (выбор чата, поиск, кнопки) — у ВК её нет,
+   шапка диалога уже показывает имя. Возвращается в редакторе темы: Элементы. */
+html:not(.vk-topbar) #extensionTopBar,
+html:not(.vk-topbar) #extensionConnectionProfiles {
+  display: none !important;
+}
+
+/* Пока ответ не пришёл, таверна пишет в пузырь «...» — рисуем прыгающие точки ВК */
+#chat .mes .mes_text.vk2017-waiting {
+  font-size: 0 !important;
+  min-height: 20px;
+  display: flex !important;
+  align-items: center;
+}
+#chat .mes .mes_text.vk2017-waiting > * {
+  display: none !important;
+}
+#chat .mes .mes_text.vk2017-waiting::after {
+  content: "";
+  display: block;
+  width: 30px;
+  height: 14px;
+  background-image:
+    radial-gradient(circle at center, var(--vk-accent) 3px, transparent 3.6px),
+    radial-gradient(circle at center, var(--vk-accent) 3px, transparent 3.6px),
+    radial-gradient(circle at center, var(--vk-accent) 3px, transparent 3.6px);
+  background-size: 8px 8px;
+  background-repeat: no-repeat;
+  background-position: 0 6px, 11px 6px, 22px 6px;
+  animation: vk2017-wave 1.2s ease-in-out infinite;
+}
+@keyframes vk2017-wave {
+  0%, 100% { background-position: 0 6px, 11px 6px, 22px 6px; opacity: 0.6; }
+  20% { background-position: 0 1px, 11px 6px, 22px 6px; opacity: 1; }
+  40% { background-position: 0 6px, 11px 1px, 22px 6px; }
+  60% { background-position: 0 6px, 11px 6px, 22px 1px; }
+}
+
+
+/* =====================================================================
+   КНОПКИ РЕДАКТИРОВАНИЯ СООБЩЕНИЯ — мелкие синие значки без тени
+   ===================================================================== */
+#chat .mes .mes_edit_buttons {
+  filter: none !important;
+  column-gap: 2px !important;
+  padding-bottom: 2px !important;
+}
+#chat .mes .mes_edit_buttons .menu_button {
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  opacity: 1 !important;
+  background: transparent !important;
+  color: var(--vk-accent) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+#chat .mes .mes_edit_buttons .menu_button:hover {
+  background: var(--vk-soft) !important;
+}
+#chat .mes .mes_edit_buttons .mes_edit_delete {
+  color: #e64646 !important;
+}
+#chat .mes .edit_textarea {
+  font-family: var(--vk-font) !important;
+  font-size: inherit !important;
+  line-height: var(--vk-line-height) !important;
+  background: var(--vk-surface) !important;
+  color: var(--vk-text) !important;
+  border: 1px solid var(--vk-field-border) !important;
+  border-radius: 4px !important;
+}
+/* счётчик свайпов «5/5» — ближе к сообщению */
+#chat .mes .swipes-counter {
+  font-size: 11px !important;
+  margin-bottom: 2px !important;
+}
