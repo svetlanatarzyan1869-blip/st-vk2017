@@ -72,32 +72,35 @@ def icons_css():
 def root_block(selector, pal):
     return selector + ' {\n' + ''.join('  --vk-%s: %s;\n' % kv for kv in pal.items()) + '}\n'
 
-def css_built():
-    # @import должен остаться первым правилом — палитры сразу после него
+def css_built(base=LIGHT):
+    # @import должен остаться первым правилом — палитры сразу после него.
+    # base — палитра в :root: LIGHT для обычной темы, DARK для отдельной тёмной
+    # (её ставят те, кто не хочет расширение и кнопку 🌓).
     lines = CSS.split('\n')
     idx = next(i for i, l in enumerate(lines) if l.startswith('@import'))
-    roots = root_block(':root', LIGHT) + '\n' + root_block(':root[data-vk-theme="dark"]', DARK)
+    roots = root_block(':root', base) + '\n' + root_block(':root[data-vk-theme="dark"]', DARK)
     return '\n'.join(lines[:idx + 1]) + '\n\n' + roots + '\n' + icons_css() + '\n'.join(lines[idx + 1:])
 
 def rgba(h, a=1):
     h = h.lstrip('#')
     return 'rgba(%d, %d, %d, %s)' % (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), a)
 
-# Поля — как в теме, сохранённой самой таверной 1.18. Цвета светлые; тёмную делает CSS.
-theme = {
-    'name': NAME,
+# Поля — как в теме, сохранённой самой таверной 1.18.
+def theme_for(pal, name):
+  return {
+    'name': name,
     'blur_strength': 0,
-    'main_text_color': rgba(LIGHT['text']),
-    'italics_text_color': rgba(LIGHT['tone']),
-    'underline_text_color': rgba(LIGHT['link']),
-    'quote_text_color': rgba(LIGHT['text']),
-    'blur_tint_color': rgba(LIGHT['surface']),
-    'chat_tint_color': rgba(LIGHT['bg']),
-    'user_mes_blur_tint_color': rgba(LIGHT['out']),
-    'bot_mes_blur_tint_color': rgba(LIGHT['in']),
+    'main_text_color': rgba(pal['text']),
+    'italics_text_color': rgba(pal['tone']),
+    'underline_text_color': rgba(pal['link']),
+    'quote_text_color': rgba(pal['text']),
+    'blur_tint_color': rgba(pal['surface']),
+    'chat_tint_color': rgba(pal['bg']),
+    'user_mes_blur_tint_color': rgba(pal['out']),
+    'bot_mes_blur_tint_color': rgba(pal['in']),
     'shadow_color': 'rgba(0, 0, 0, 0)',
     'shadow_width': 0,
-    'border_color': rgba(LIGHT['border']),
+    'border_color': rgba(pal['border']),
     'font_scale': 0.9,  # текст чуть мельче, ближе к 13px ВК; дальше — ползунок «Размер текста»
     'fast_ui_mode': True,
     'waifuMode': False,
@@ -116,7 +119,7 @@ theme = {
     'enableZenSliders': False,
     'enableLabMode': False,
     'hotswap_enabled': True,
-    'custom_css': css_built(),
+    'custom_css': css_built(pal),
     'bogus_folders': False,
     'zoomed_avatar_magnification': False,
     'reduced_motion': False,
@@ -127,6 +130,9 @@ theme = {
 }
 
 os.makedirs(os.path.join(HERE, 'theme'), exist_ok=True)
-out = os.path.join(HERE, 'theme', 'vk2017.json')
-json.dump(theme, open(out, 'w', encoding='utf-8'), ensure_ascii=False, indent=4)
-print('собрано: theme/vk2017.json', os.path.getsize(out), 'байт')
+# два файла: обычная тема (светлая, тёмную включает расширение 🌓) и отдельная тёмная
+# для тех, кто ставит только тему, без расширения
+for pal, name, fname in ((LIGHT, NAME, 'vk2017.json'), (DARK, NAME + ' тёмная', 'vk2017-dark.json')):
+    out = os.path.join(HERE, 'theme', fname)
+    json.dump(theme_for(pal, name), open(out, 'w', encoding='utf-8'), ensure_ascii=False, indent=4)
+    print('собрано: theme/%s' % fname, os.path.getsize(out), 'байт')
