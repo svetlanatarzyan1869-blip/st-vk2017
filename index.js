@@ -12,11 +12,33 @@
 import { createEditor, textDefault } from './editor.js';
 
 const MODULE = 'vk2017';
-const VERSION = '1.8.0';
+const VERSION = '1.9.0';
 const ATTR = 'data-vk-theme';
 const THEME_NAME = 'ВКонтакте 2017';
 const SELECT_FLAG = 'vk2017_select_theme'; // после установки темы и перезагрузки — выбрать её
 const BASE = new URL('.', import.meta.url).href;
+
+/* ── стикеры Спотти для плашек ВК ──
+   Плашка в сообщении больше не тащит набор base64 (было до 47 КБ на сообщение) — она
+   берёт картинки из window.__VK2017_STK. Кладём набор на страницу как можно раньше:
+   сначала из localStorage, потом обновляем с воркера (там же запасной источник для плашки). */
+const STK_URL = 'https://podslushano-album.spletnik-meme-worker.workers.dev/stk/all.json';
+const STK_LS = 'vk2017_stickers_v1';
+try {
+    const cached = localStorage.getItem(STK_LS);
+    if (cached) window.__VK2017_STK = JSON.parse(cached);
+} catch (e) { /* нет кэша — возьмём с воркера */ }
+(async () => {
+    try {
+        const r = await fetch(STK_URL, { cache: 'force-cache' });
+        if (!r.ok) return;
+        const map = await r.json();
+        if (map && typeof map === 'object') {
+            window.__VK2017_STK = map;
+            try { localStorage.setItem(STK_LS, JSON.stringify(map)); } catch (e) { /* переполнено — не страшно */ }
+        }
+    } catch (e) { /* без сети плашки возьмут кэш или воркер позже */ }
+})();
 
 function ctx() { return SillyTavern.getContext(); }
 
