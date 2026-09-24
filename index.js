@@ -12,7 +12,7 @@
 import { createEditor, textDefault } from './editor.js';
 
 const MODULE = 'vk2017';
-const VERSION = '1.10.0';
+const VERSION = '1.10.1';
 const ATTR = 'data-vk-theme';
 const THEME_NAME = 'ВКонтакте 2017';
 const SELECT_FLAG = 'vk2017_select_theme'; // после установки темы и перезагрузки — выбрать её
@@ -143,6 +143,20 @@ function paintPlaques(scope) {
             if (typeof fn === 'function') fn(el);
         } catch (e) { console.warn('[vk2017] плашка не нарисовалась', e); }
     }
+}
+
+/* ── сколько диалогов на стартовом экране ──
+   Таверна по умолчанию показывает три последних чата, а кнопку с этой настройкой
+   тема прячет (она выбивается из вида ВК). Ставим больше — один раз, дальше не трогаем. */
+function ensureRecentChats() {
+    const as = ctx().accountStorage;
+    if (!as || typeof as.getItem !== 'function') return;
+    let cur = null;
+    try { cur = JSON.parse(as.getItem('recentChatsSettings') || 'null'); } catch (e) { /* испорчено — перезапишем */ }
+    if (cur && cur.vk2017) return;
+    try {
+        as.setItem('recentChatsSettings', JSON.stringify({ maxDisplayed: 20, collapsedDisplayed: 20, vk2017: 1 }));
+    } catch (e) { /* не вышло — останется как было */ }
 }
 
 /* ── редактор темы на экране (editor.js) ── */
@@ -631,6 +645,7 @@ jQuery(() => {
     watchChatSelect();
     watchCharList();
     loadPlaqueCode();   // стиль и код плашек — сразу, не дожидаясь APP_READY
+    ensureRecentChats();
     const et = c.eventTypes || c.event_types;
     updateHead();
     c.eventSource.on(et.GENERATION_STARTED, (type, _o, dryRun) => { if (!dryRun && type !== 'quiet') setHeadTyping(true); });
