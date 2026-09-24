@@ -1177,10 +1177,41 @@ html.vk-list-tags-off #rm_print_characters_block .tags {
 
 /* Лого SillyTavern, версия и ссылки (Документация/GitHub/Discord) на стартовом экране.
    Включаются в редакторе темы: Элементы → «Шапка приветствия таверны». */
-html:not(.vk-welcome) .welcomePanel .welcomeHeaderTitle,
 html:not(.vk-welcome) .welcomePanel .welcomeShortcuts,
 html:not(.vk-welcome) .welcomePanel .welcomeShortcutsSeparator {
   display: none !important;
+}
+/* из шапки таверны прячем лого и версию, но оставляем шестерёнку: в ней задаётся,
+   сколько диалогов показывать (по умолчанию таверна показывает всего три) */
+html:not(.vk-welcome) .welcomePanel .welcomeHeaderTitle {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 8px 12px 0 !important;
+  min-height: 0 !important;
+  border: none !important;
+}
+html:not(.vk-welcome) .welcomePanel .welcomeHeaderLogo,
+html:not(.vk-welcome) .welcomePanel .welcomeHeaderVersionDisplay,
+html:not(.vk-welcome) .welcomePanel .showRecentChats,
+html:not(.vk-welcome) .welcomePanel .hideRecentChats {
+  display: none !important;
+}
+html:not(.vk-welcome) .welcomePanel .welcomeHeaderTitle .mes_button {
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center;
+  font-size: 14px !important;
+  color: var(--vk-icon) !important;
+  opacity: 1 !important;
+}
+html:not(.vk-welcome) .welcomePanel .welcomeHeaderTitle .mes_button:hover {
+  color: var(--vk-accent) !important;
 }
 .welcomePanel {
   background: transparent !important;
@@ -1247,7 +1278,7 @@ html.vk-welcome-chats #chat .welcomePanel ~ .mes[type="welcome_prompt"] .mes_blo
 }
 html.vk-welcome-chats .welcomePanel .welcomeHeader {
   margin: 0 !important;
-  padding: 12px 16px 10px !important;
+  padding: 2px 16px 10px !important;
   border-bottom: 1px solid var(--vk-line) !important;
 }
 html.vk-welcome-chats .welcomePanel .recentChatsTitle {

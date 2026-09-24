@@ -12,7 +12,7 @@
 import { createEditor, textDefault } from './editor.js';
 
 const MODULE = 'vk2017';
-const VERSION = '1.9.0';
+const VERSION = '1.9.1';
 const ATTR = 'data-vk-theme';
 const THEME_NAME = 'ВКонтакте 2017';
 const SELECT_FLAG = 'vk2017_select_theme'; // после установки темы и перезагрузки — выбрать её
