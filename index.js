@@ -12,7 +12,7 @@
 import { createEditor, textDefault } from './editor.js';
 
 const MODULE = 'vk2017';
-const VERSION = '1.9.1';
+const VERSION = '1.10.0';
 const ATTR = 'data-vk-theme';
 const THEME_NAME = 'ВКонтакте 2017';
 const SELECT_FLAG = 'vk2017_select_theme'; // после установки темы и перезагрузки — выбрать её
@@ -66,6 +66,83 @@ function applyDark() {
     else document.documentElement.removeAttribute(ATTR);
     $('#vk2017_menu_label').text(dark ? 'Светлая тема ВК' : 'Тёмная тема ВК');
     $('#vk2017_dark_label').text(dark ? 'Светлая' : 'Тёмная');
+}
+
+/* ── плашки пресета: рисуем их сами, без окошек ──
+   Раньше плашка отдавалась блоком ```html и Tavern Helper заводил на КАЖДУЮ свой iframe:
+   в чате на 500 сообщений это сотня окошек, чат открывался очень долго. Теперь регекс даёт
+   обычную разметку с пометкой data-vkp, а стиль и код плашек лежат общие на странице.
+   Берём их с воркера и держим копию в localStorage — со второго раза без сети. */
+const PLQ_BASE = 'https://podslushano-album.spletnik-meme-worker.workers.dev/plq/';
+const PLQ_LS = 'vk2017_plaques_code_v1';
+const STK_BASE = 'https://podslushano-album.spletnik-meme-worker.workers.dev/stk/';
+
+function plqApply(css, js) {
+    let style = document.getElementById('vk2017-plaques-css');
+    if (!style) {
+        style = document.createElement('style');
+        style.id = 'vk2017-plaques-css';
+        document.head.appendChild(style);
+    }
+    if (style.textContent !== css) style.textContent = css;
+    if (!window.__VK2017_PLQ) {
+        try { (0, eval)(js); } catch (e) { console.warn('[vk2017] код плашек не выполнился', e); }
+    }
+}
+
+async function loadPlaqueCode() {
+    try {
+        const cached = JSON.parse(localStorage.getItem(PLQ_LS) || 'null');
+        if (cached && cached.css && cached.js) { plqApply(cached.css, cached.js); paintPlaques(); }
+    } catch (e) { /* нет копии — возьмём с воркера */ }
+    try {
+        const [css, js] = await Promise.all([
+            fetch(PLQ_BASE + 'plaques.css', { cache: 'no-cache' }).then(r => (r.ok ? r.text() : null)),
+            fetch(PLQ_BASE + 'plaques.js', { cache: 'no-cache' }).then(r => (r.ok ? r.text() : null)),
+        ]);
+        if (css && js) {
+            plqApply(css, js);
+            try { localStorage.setItem(PLQ_LS, JSON.stringify({ css, js })); } catch (e) { /* не влезло */ }
+        }
+    } catch (e) { /* без сети остаётся копия из localStorage */ }
+    paintPlaques();
+}
+
+/* Таверна переименовывает классы в сообщениях: class="hud-widget" → "custom-hud-widget".
+   Возвращаем исходные имена, чтобы общий стиль и код плашек работали как есть. */
+function plqUnprefix(root) {
+    const all = [root].concat(Array.from(root.querySelectorAll('[class]')));
+    for (const el of all) {
+        if (!el.classList || !el.classList.length) continue;
+        const add = [];
+        el.classList.forEach(c => {
+            if (c.indexOf('custom-') === 0) {
+                const name = c.slice(7);
+                if (name && !el.classList.contains(name)) add.push(name);
+            }
+        });
+        if (add.length) el.classList.add(...add);
+    }
+}
+
+function paintPlaques(scope) {
+    if (!window.__VK2017_PLQ) return;
+    const root = scope || document.getElementById('chat');
+    if (!root) return;
+    const nodes = root.querySelectorAll('[data-vkp]:not([data-vkp-done])');
+    for (const el of nodes) {
+        el.setAttribute('data-vkp-done', '1');
+        try {
+            plqUnprefix(el);
+            const stk = window.__VK2017_STK || {};
+            el.querySelectorAll('img[data-vks]').forEach(im => {
+                const n = im.getAttribute('data-vks');
+                if (n && !im.getAttribute('src')) im.src = stk[n] || (STK_BASE + n + '.webp');
+            });
+            const fn = window.__VK2017_PLQ[el.getAttribute('data-vkp')];
+            if (typeof fn === 'function') fn(el);
+        } catch (e) { console.warn('[vk2017] плашка не нарисовалась', e); }
+    }
 }
 
 /* ── редактор темы на экране (editor.js) ── */
@@ -553,6 +630,7 @@ jQuery(() => {
     refreshState();
     watchChatSelect();
     watchCharList();
+    loadPlaqueCode();   // стиль и код плашек — сразу, не дожидаясь APP_READY
     const et = c.eventTypes || c.event_types;
     updateHead();
     c.eventSource.on(et.GENERATION_STARTED, (type, _o, dryRun) => { if (!dryRun && type !== 'quiet') setHeadTyping(true); });
@@ -568,8 +646,14 @@ jQuery(() => {
     c.eventSource.on(et.GENERATION_STOPPED, typingHide);
     c.eventSource.on(et.MESSAGE_RECEIVED, typingHide);
     c.eventSource.on(et.CHAT_CHANGED, () => { typingHide(); refreshState(); countsFor = null; loadChatCounts().then(decorateChatSelect); });
+    // плашки: после каждой отрисовки сообщения и при смене чата
+    for (const ev of [et.CHARACTER_MESSAGE_RENDERED, et.USER_MESSAGE_RENDERED, et.MESSAGE_SWIPED, et.MESSAGE_UPDATED, et.MESSAGE_EDITED, et.CHAT_CHANGED, et.MORE_MESSAGES_LOADED]) {
+        if (ev) c.eventSource.on(ev, () => setTimeout(() => paintPlaques(), 0));
+    }
+    const chatEl = document.getElementById('chat');
+    if (chatEl) new MutationObserver(() => paintPlaques()).observe(chatEl, { childList: true, subtree: true });
     // список тем появляется, когда таверна дочитает настройки
-    c.eventSource.on(et.APP_READY, () => { selectThemeAfterInstall(); syncThemeFromExtension(); syncPlaques(); editor.apply(); refreshState(); });
+    c.eventSource.on(et.APP_READY, () => { selectThemeAfterInstall(); syncThemeFromExtension(); syncPlaques(); loadPlaqueCode(); editor.apply(); refreshState(); });
     // если таверна уже загрузилась раньше расширения
     setTimeout(() => { syncThemeFromExtension(); syncPlaques(); }, 1500);
     // смена темы в настройках — обновляем подпись, правки редактора ставим снова последними
