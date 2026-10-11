@@ -12,7 +12,7 @@
 import { createEditor, textDefault } from './editor.js';
 
 const MODULE = 'vk2017';
-const VERSION = '1.10.1';
+const VERSION = '1.10.2';
 const ATTR = 'data-vk-theme';
 const THEME_NAME = 'ВКонтакте 2017';
 const SELECT_FLAG = 'vk2017_select_theme'; // после установки темы и перезагрузки — выбрать её
@@ -77,6 +77,7 @@ const PLQ_BASE = 'https://podslushano-album.spletnik-meme-worker.workers.dev/plq
 const PLQ_LS = 'vk2017_plaques_code_v1';
 const STK_BASE = 'https://podslushano-album.spletnik-meme-worker.workers.dev/stk/';
 
+let plqCode = '';   // какой код плашек сейчас выполнен
 function plqApply(css, js) {
     let style = document.getElementById('vk2017-plaques-css');
     if (!style) {
@@ -85,8 +86,13 @@ function plqApply(css, js) {
         document.head.appendChild(style);
     }
     if (style.textContent !== css) style.textContent = css;
-    if (!window.__VK2017_PLQ) {
-        try { (0, eval)(js); } catch (e) { console.warn('[vk2017] код плашек не выполнился', e); }
+    // свежий код всегда заменяет прежний: иначе копия из localStorage жила бы вечно
+    if (js && js !== plqCode) {
+        try {
+            (0, eval)(js);
+            plqCode = js;
+            document.querySelectorAll('[data-vkp-done]').forEach(el => el.removeAttribute('data-vkp-done'));
+        } catch (e) { console.warn('[vk2017] код плашек не выполнился', e); }
     }
 }
 
