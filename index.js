@@ -12,7 +12,7 @@
 import { createEditor, textDefault } from './editor.js';
 
 const MODULE = 'vk2017';
-const VERSION = '1.10.2';
+const VERSION = '1.10.3';
 const ATTR = 'data-vk-theme';
 const THEME_NAME = 'ВКонтакте 2017';
 const SELECT_FLAG = 'vk2017_select_theme'; // после установки темы и перезагрузки — выбрать её
@@ -149,6 +149,40 @@ function paintPlaques(scope) {
             if (typeof fn === 'function') fn(el);
         } catch (e) { console.warn('[vk2017] плашка не нарисовалась', e); }
     }
+}
+
+/* ── «Проверить плашки»: отчёт для Светлячка, если плашка не нарисовалась ── */
+async function plaqueReport() {
+    const c = ctx();
+    const L = [];
+    L.push('Отчёт для Светлячка · плашки · ' + new Date().toLocaleString('ru-RU'));
+    L.push('расширение v' + VERSION + ', тема ' + (themeActive() ? 'включена' : 'НЕ выбрана'));
+    const plq = window.__VK2017_PLQ;
+    L.push('код плашек: ' + (plq ? 'загружен (' + Object.keys(plq).join(', ') + ')' : 'НЕ загружен'));
+    L.push('стиль плашек: ' + (document.getElementById('vk2017-plaques-css') ? 'на месте' : 'НЕТ'));
+    L.push('стикеры: ' + (window.__VK2017_STK ? Object.keys(window.__VK2017_STK).length : 'нет'));
+    const pm = typeof c.getPresetManager === 'function' ? c.getPresetManager('openai') : null;
+    let scripts = [];
+    try { scripts = pm.readPresetExtensionField({ path: 'regex_scripts' }) || []; } catch (e) { /* нет доступа */ }
+    L.push('регексов в пресете: ' + scripts.length);
+    for (const r of scripts) {
+        const rs = String(r.replaceString || '');
+        L.push('  ' + (r.disabled ? '[выкл] ' : '') + (r.scriptName || '?') + ' — ' + rs.length + ' симв' +
+            (rs.includes('data-vkp') ? ', новая' : (rs.includes('```html') ? ', СТАРАЯ (в окошке)' : '')));
+    }
+    const nodes = document.querySelectorAll('#chat [data-vkp]');
+    const done = document.querySelectorAll('#chat [data-vkp][data-vkp-done]');
+    L.push('плашек в чате: ' + nodes.length + ', нарисовано: ' + done.length);
+    const kinds = {};
+    nodes.forEach(n => { const k = n.getAttribute('data-vkp'); kinds[k] = (kinds[k] || 0) + 1; });
+    L.push('по видам: ' + (Object.keys(kinds).length ? JSON.stringify(kinds) : 'нет'));
+    const raw = Array.from(document.querySelectorAll('#chat .mes_text'))
+        .filter(el => /\[(MSG|HUD|IM|MOOD|FETISH|CHAOS|CONSEQUENCE)\]/.test(el.innerText || '')).length;
+    L.push('сообщений с НЕподставленными метками: ' + raw);
+    const text = L.join('\n');
+    console.log(text);
+    try { await navigator.clipboard.writeText(text); } catch (e) { /* без буфера — перепишет со скрина */ }
+    await c.callGenericPopup('<pre style="white-space:pre-wrap;text-align:left;font-size:12px">' + text.replace(/</g, '&lt;') + '</pre>', c.POPUP_TYPE.TEXT);
 }
 
 /* ── сколько диалогов на стартовом экране ──
@@ -597,6 +631,7 @@ function addSettings() {
         '<div class="menu_button menu_button_icon" id="vk2017_dark_btn"><i class="fa-solid fa-circle-half-stroke"></i><span id="vk2017_dark_label"></span></div>' +
         '<div class="menu_button menu_button_icon" id="vk2017_edit"><i class="fa-solid fa-palette"></i><span>Настроить</span></div>' +
         '<div class="menu_button menu_button_icon" id="vk2017_update"><i class="fa-solid fa-rotate"></i><span>Обновить тему</span></div>' +
+        '<div class="menu_button menu_button_icon" id="vk2017_check"><i class="fa-solid fa-stethoscope"></i><span>Проверить плашки</span></div>' +
         '</div>' +
         '<label class="checkbox_label" for="vk2017_typing"><input type="checkbox" id="vk2017_typing"><span>«печатает» над полем ввода, пока бот отвечает</span></label>' +
         '</div>';
@@ -606,6 +641,11 @@ function addSettings() {
     $('#vk2017_dark_btn').on('click', toggleDark);
     $('#vk2017_edit').on('click', () => editor.open());
     $('#vk2017_update').on('click', updateTheme);
+    $('#vk2017_check').on('click', () => {
+        try { localStorage.removeItem(PLQ_LS); } catch (e) { /* ничего */ }
+        plqCode = '';
+        loadPlaqueCode().then(plaqueReport);
+    });
     $('#vk2017_typing').prop('checked', settings().typing).on('change', function () {
         settings().typing = this.checked;
         if (!this.checked) typingHide();
