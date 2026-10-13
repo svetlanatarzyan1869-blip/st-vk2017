@@ -12,7 +12,7 @@
 import { createEditor, textDefault } from './editor.js';
 
 const MODULE = 'vk2017';
-const VERSION = '1.10.3';
+const VERSION = '1.11.0';
 const ATTR = 'data-vk-theme';
 const THEME_NAME = 'ВКонтакте 2017';
 const SELECT_FLAG = 'vk2017_select_theme'; // после установки темы и перезагрузки — выбрать её
@@ -21,19 +21,30 @@ const BASE = new URL('.', import.meta.url).href;
 /* ── стикеры Спотти для плашек ВК ──
    Плашка в сообщении больше не тащит набор base64 (было до 47 КБ на сообщение) — она
    берёт картинки из window.__VK2017_STK. Кладём набор на страницу как можно раньше:
-   сначала из localStorage, потом обновляем с воркера (там же запасной источник для плашки). */
+   сначала из localStorage, потом обновляем с воркера (там же запасной источник для плашки).
+   С воркера приходят только картинки (JSON «номер → data:image/…»), не код. Всё, что не
+   похоже на картинку, выкидываем: адрес стикера попадает в атрибут src. */
 const STK_URL = 'https://podslushano-album.spletnik-meme-worker.workers.dev/stk/all.json';
 const STK_LS = 'vk2017_stickers_v1';
+function stkClean(map) {
+    if (!map || typeof map !== 'object' || Array.isArray(map)) return null;
+    const out = {};
+    for (const [k, v] of Object.entries(map)) {
+        if (!/^\d{1,3}$/.test(k) || typeof v !== 'string') continue;
+        if (/^data:image\/(webp|png|jpeg|gif);base64,[A-Za-z0-9+/=]+$/.test(v) || /^https:\/\/[^\s"'<>()]+$/.test(v)) out[k] = v;
+    }
+    return out;
+}
 try {
-    const cached = localStorage.getItem(STK_LS);
-    if (cached) window.__VK2017_STK = JSON.parse(cached);
+    const cached = stkClean(JSON.parse(localStorage.getItem(STK_LS) || 'null'));
+    if (cached) window.__VK2017_STK = cached;
 } catch (e) { /* нет кэша — возьмём с воркера */ }
 (async () => {
     try {
         const r = await fetch(STK_URL, { cache: 'force-cache' });
         if (!r.ok) return;
-        const map = await r.json();
-        if (map && typeof map === 'object') {
+        const map = stkClean(await r.json());
+        if (map && Object.keys(map).length) {
             window.__VK2017_STK = map;
             try { localStorage.setItem(STK_LS, JSON.stringify(map)); } catch (e) { /* переполнено — не страшно */ }
         }
@@ -72,46 +83,40 @@ function applyDark() {
    Раньше плашка отдавалась блоком ```html и Tavern Helper заводил на КАЖДУЮ свой iframe:
    в чате на 500 сообщений это сотня окошек, чат открывался очень долго. Теперь регекс даёт
    обычную разметку с пометкой data-vkp, а стиль и код плашек лежат общие на странице.
-   Берём их с воркера и держим копию в localStorage — со второго раза без сети. */
-const PLQ_BASE = 'https://podslushano-album.spletnik-meme-worker.workers.dev/plq/';
-const PLQ_LS = 'vk2017_plaques_code_v1';
+   Стиль и код лежат в самом расширении (папка plaques/) и грузятся обычным <script src>
+   из папки расширения — раньше код качался с воркера и запускался через eval, это убрано. */
+const PLQ_DIR = BASE + 'plaques/';
 const STK_BASE = 'https://podslushano-album.spletnik-meme-worker.workers.dev/stk/';
-
-let plqCode = '';   // какой код плашек сейчас выполнен
-function plqApply(css, js) {
-    let style = document.getElementById('vk2017-plaques-css');
-    if (!style) {
-        style = document.createElement('style');
-        style.id = 'vk2017-plaques-css';
-        document.head.appendChild(style);
-    }
-    if (style.textContent !== css) style.textContent = css;
-    // свежий код всегда заменяет прежний: иначе копия из localStorage жила бы вечно
-    if (js && js !== plqCode) {
-        try {
-            (0, eval)(js);
-            plqCode = js;
-            document.querySelectorAll('[data-vkp-done]').forEach(el => el.removeAttribute('data-vkp-done'));
-        } catch (e) { console.warn('[vk2017] код плашек не выполнился', e); }
-    }
+// старая копия кода плашек из localStorage (до v1.11) больше не нужна
+for (const k of ['vk2017_plaques_code_v1']) {
+    try { localStorage.removeItem(k); } catch (e) { /* ничего */ }
 }
 
-async function loadPlaqueCode() {
-    try {
-        const cached = JSON.parse(localStorage.getItem(PLQ_LS) || 'null');
-        if (cached && cached.css && cached.js) { plqApply(cached.css, cached.js); paintPlaques(); }
-    } catch (e) { /* нет копии — возьмём с воркера */ }
-    try {
-        const [css, js] = await Promise.all([
-            fetch(PLQ_BASE + 'plaques.css', { cache: 'no-cache' }).then(r => (r.ok ? r.text() : null)),
-            fetch(PLQ_BASE + 'plaques.js', { cache: 'no-cache' }).then(r => (r.ok ? r.text() : null)),
-        ]);
-        if (css && js) {
-            plqApply(css, js);
-            try { localStorage.setItem(PLQ_LS, JSON.stringify({ css, js })); } catch (e) { /* не влезло */ }
-        }
-    } catch (e) { /* без сети остаётся копия из localStorage */ }
-    paintPlaques();
+let plqLoading = null;   // Promise: код плашек загружен (true) или нет (false)
+function loadPlaqueCode(force = false) {
+    if (!document.getElementById('vk2017-plaques-css')) {
+        const link = document.createElement('link');
+        link.id = 'vk2017-plaques-css';
+        link.rel = 'stylesheet';
+        link.href = PLQ_DIR + 'plaques.css?v=' + VERSION;
+        document.head.appendChild(link);
+    }
+    if (!plqLoading || force) {
+        plqLoading = new Promise((resolve) => {
+            const old = document.getElementById('vk2017-plaques-js');
+            if (old) old.remove();
+            const s = document.createElement('script');
+            s.id = 'vk2017-plaques-js';
+            s.src = PLQ_DIR + 'plaques.js?v=' + VERSION + (force ? '&t=' + Date.now() : '');
+            s.onload = () => {
+                if (force) document.querySelectorAll('[data-vkp-done]').forEach(el => el.removeAttribute('data-vkp-done'));
+                resolve(true);
+            };
+            s.onerror = () => { console.warn('[vk2017] код плашек не загрузился', s.src); resolve(false); };
+            document.head.appendChild(s);
+        });
+    }
+    return plqLoading.then(() => paintPlaques());
 }
 
 /* Таверна переименовывает классы в сообщениях: class="hud-widget" → "custom-hud-widget".
@@ -160,6 +165,7 @@ async function plaqueReport() {
     const plq = window.__VK2017_PLQ;
     L.push('код плашек: ' + (plq ? 'загружен (' + Object.keys(plq).join(', ') + ')' : 'НЕ загружен'));
     L.push('стиль плашек: ' + (document.getElementById('vk2017-plaques-css') ? 'на месте' : 'НЕТ'));
+    L.push('файлы плашек: ' + PLQ_DIR + 'plaques.js');
     L.push('стикеры: ' + (window.__VK2017_STK ? Object.keys(window.__VK2017_STK).length : 'нет'));
     const pm = typeof c.getPresetManager === 'function' ? c.getPresetManager('openai') : null;
     let scripts = [];
@@ -642,9 +648,7 @@ function addSettings() {
     $('#vk2017_edit').on('click', () => editor.open());
     $('#vk2017_update').on('click', updateTheme);
     $('#vk2017_check').on('click', () => {
-        try { localStorage.removeItem(PLQ_LS); } catch (e) { /* ничего */ }
-        plqCode = '';
-        loadPlaqueCode().then(plaqueReport);
+        loadPlaqueCode(true).then(plaqueReport);
     });
     $('#vk2017_typing').prop('checked', settings().typing).on('change', function () {
         settings().typing = this.checked;
